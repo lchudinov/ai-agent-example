@@ -13,9 +13,9 @@
     "openai": "^5"
   },
   "devDependencies": {
-    "@types/node": "^24",
+    "@openrouter/sdk": "^0.13",
+    "@types/node": "^24.13.3",
     "tsx": "^4",
-    "typescript": "^5",
-    "@openrouter/sdk": "^0.13"
+    "typescript": "^5"
   }
 }
