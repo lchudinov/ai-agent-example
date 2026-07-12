@@ -11,7 +11,7 @@ const agent = new Agent([
 
 
 const result = await agent.run(
-  "Tell me the current date"
+  "Какая сегодня дата?"
 );
 
 
