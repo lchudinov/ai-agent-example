@@ -1,9 +1,61 @@
 import { Tool } from "./tool.js";
 import { OpenRouter, } from '@openrouter/sdk';
 import { ChatMessages } from "@openrouter/sdk/models";
+import axios from "axios";
+import { SocksProxyAgent } from "socks-proxy-agent";
+
+const proxyAgent = new SocksProxyAgent(
+  "socks5://127.0.0.1:1080"
+);
+
+async function streamToBuffer(stream: ReadableStream) {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
+}
+
+export const httpClient = {
+  async request(request: any) {
+    let data = request.body;
+
+    if (data instanceof ReadableStream) {
+      data = await streamToBuffer(data);
+    }
+
+    const response = await axios.request({
+      url: request.url,
+      method: request.method,
+      headers: request.headers,
+      data,
+
+      httpAgent: proxyAgent,
+      httpsAgent: proxyAgent,
+
+      responseType: "arraybuffer"
+    });
+
+    return {
+      statusCode: response.status,
+      headers: response.headers,
+      body: response.data
+    };
+  }
+};
 
 const openRouter = new OpenRouter({
   apiKey: process.env.OPEN_ROUTER_API_KEY,
+  httpClient: httpClient as any,
 });
 
 export async function runLLM(
